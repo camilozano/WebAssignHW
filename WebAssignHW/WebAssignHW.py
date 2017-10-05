@@ -41,7 +41,7 @@ def all_homework(url, user, pwd):
 			select = selenium.find_element_by_id('course') #Gathers array of courses
 			options = select.find_elements_by_tag_name("option") #Gets lenght for break 
 			course=options[class_num].text
-			if options>2: options[class_num].click()
+			if len(options)>2: options[class_num].click()
 			else: break
 			homework[course]=get_hw(selenium,course) #stores assingments in form of {'class':{'hw','due'}}
 			class_num += 1
