@@ -24,6 +24,9 @@
     <Compile Include="WebAssignHW.py" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitignore">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="account.key" />
     <Content Include="WebAssign.ics" />
   </ItemGroup>
