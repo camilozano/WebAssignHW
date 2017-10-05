@@ -2,9 +2,10 @@ from selenium						import webdriver
 from selenium.webdriver.common.keys	import Keys
 from selenium.webdriver.support.ui	import Select
 from dateutil.parser				import parse
-from datetime						import timedelta
+from dateutil.tz					import gettz
+from datetime						import timedelta, datetime
 from ics							import Calendar, Event
-import pytz
+import time
 
 #Given a Webassign course page return homework 
 #Return list in format {'assignment':'datetime '}
@@ -18,13 +19,17 @@ def get_hw(selenium, course):
 #Returns compiled list of homework of all classes
 def all_homework(url, user, pwd):
 	#Sets up browser
-	selenium = webdriver.Chrome()
-	selenium.get(url)
-	selenium.implicitly_wait(5)
+	try:
+		selenium = webdriver.PhantomJS()
+		selenium.get(url)
+		selenium.implicitly_wait(5)
 
-	#Sends username and pass
-	userfield=selenium.find_element_by_id("email").send_keys(user)
-	pwdfield= selenium.find_element_by_id("cengagePassword").send_keys(pwd)
+		#Sends username and pass
+		userfield=selenium.find_element_by_id("email").send_keys(user)
+		pwdfield= selenium.find_element_by_id("cengagePassword").send_keys(pwd)
+	except:
+		print('Could Not Connect')
+		exit()
 
 	#Counter index for list of classes as first two options aren't courses
 	class_num = 2
@@ -36,7 +41,8 @@ def all_homework(url, user, pwd):
 			select = selenium.find_element_by_id('course') #Gathers array of courses
 			options = select.find_elements_by_tag_name("option") #Gets lenght for break 
 			course=options[class_num].text
-			options[class_num].click()
+			if options>2: options[class_num].click()
+			else: break
 			homework[course]=get_hw(selenium,course) #stores assingments in form of {'class':{'hw','due'}}
 			class_num += 1
 			selenium.back()
@@ -45,6 +51,7 @@ def all_homework(url, user, pwd):
 	return homework
 
 
+start_time = datetime.now()
 
 #Read user and pass from file
 file = open('account.key','r')
@@ -52,6 +59,7 @@ key = file.readlines()
 url		= key[0].replace('url=','')
 user	= key[1].replace('user=','')
 pwd		= key[2].replace('pass=','')
+tz		= key[3].replace('timezone=','')
 file.close()
 
 homework = all_homework(url,user,pwd) #Grabs all homework onto list
@@ -60,12 +68,12 @@ cal = Calendar()
 
 for course, assignment in homework.items():
 	for homework, due in assignment.items():
-		time = parse(due).astimezone(pytz.es)
+		time = parse(due).astimezone(gettz(tz))
 		print('{} {} {}'.format(homework, due, time))
 		cal.events.append(Event(name=homework,begin=time-timedelta(hours=1),end=time,description=course))
 
 with open('WebAssign.ics', 'w') as f:
     f.writelines(cal)
 
-import time
-time.
+end_time = datetime.now() - start_time
+print(end_time)
